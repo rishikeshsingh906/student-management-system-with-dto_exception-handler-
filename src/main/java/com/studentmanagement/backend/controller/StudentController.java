@@ -1,81 +1,74 @@
 
 package com.studentmanagement.backend.controller;
 
+import com.studentmanagement.backend.dto.StudentRequestDto;
+import com.studentmanagement.backend.dto.StudentResponseDto;
 import com.studentmanagement.backend.entity.Student;
 import com.studentmanagement.backend.service.StudentService;
 
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
 @RequestMapping("/api/students")
 public class StudentController {
 
-    // STEP 1: Service reference
     private final StudentService studentService;
 
-    // STEP 2: Constructor Injection
+    // Constructor Injection
     public StudentController(StudentService studentService) {
         this.studentService = studentService;
     }
 
-    // STEP 3: POST API
+    // CREATE STUDENT
     @PostMapping
-    public ResponseEntity<Student> addStudent(
-            @RequestBody Student student) {
+    @ResponseStatus(HttpStatus.CREATED)
+    public StudentResponseDto saveStudent(
+            @Valid @RequestBody StudentRequestDto requestDto) {
 
-        // STEP 4: Service call
-        Student savedStudent = studentService.saveStudent(student);
+        Student student = new Student();
 
-        // STEP 5: Return response
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(savedStudent);
+        student.setName(requestDto.getName());
+        student.setEmail(requestDto.getEmail());
+        student.setAge(requestDto.getAge());
+
+        return studentService.saveStudent(student);
     }
 
+    // GET ALL STUDENTS
     @GetMapping
-    public ResponseEntity<List<Student>> getAllStudents() {
-
-        List<Student> students = studentService.getAllStudents();
-
-        return ResponseEntity.ok(students);
+    public List<StudentResponseDto> getAllStudents() {
+        return studentService.getAllStudents();
     }
+
+    // GET STUDENT BY ID
     @GetMapping("/{id}")
-    public ResponseEntity<Student> getStudentById(
-            @PathVariable Long id) {
-
-        Student student = studentService.getStudentById(id);
-
-        return ResponseEntity.ok(student);
+    public StudentResponseDto getStudentById(@PathVariable Long id) {
+        return studentService.getStudentById(id);
     }
 
+    // UPDATE STUDENT
     @PutMapping("/{id}")
-    public ResponseEntity<Student> updateStudent(
+    public StudentResponseDto updateStudent(
             @PathVariable Long id,
-            @RequestBody Student student) {
+            @Valid @RequestBody StudentRequestDto requestDto) {
 
-        // STEP 1: Service call
-        Student updatedStudent =
-                studentService.updateStudent(id, student);
+        Student student = new Student();
 
-        // STEP 2: Return updated student
-        return ResponseEntity.ok(updatedStudent);
+        student.setName(requestDto.getName());
+        student.setEmail(requestDto.getEmail());
+        student.setAge(requestDto.getAge());
+
+        return studentService.updateStudent(id, student);
     }
 
+    // DELETE STUDENT
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteStudent(
-            @PathVariable Long id) {
-
-        // STEP 1: Service call
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteStudent(@PathVariable Long id) {
         studentService.deleteStudent(id);
-
-        // STEP 2: Return HTTP 204
-        return ResponseEntity.noContent().build();
     }
-
 }
